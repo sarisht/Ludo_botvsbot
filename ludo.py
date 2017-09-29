@@ -5,6 +5,7 @@ class Board(object):
 	def __init__(self, game_mode):
 		self.start_squares = {'G':1, 'Y':14, 'B':27, 'R':40}
 		self.walk_start_squares = {'G':53, 'Y':58, 'B':63, 'R':68}
+		self.safe_squares = [1,9,14,22,27,35,40,48]
 		if game_mode==0:
 			self.colours = ['R','Y']
 			self.local_positions = {'R':[-1,-1,-1,-1], 'Y':[-1,-1,-1,-1]}
@@ -13,6 +14,13 @@ class Board(object):
 			self.colours = ['B', 'G']
 			self.local_positions = {'B':[-1,-1,-1,-1], 'G':[-1,-1,-1,-1]}
 			self.global_positions = {'B':[-1,-1,-1,-1], 'G':[-1,-1,-1,-1]}
+
+	def opp(self,c):
+		if c not in colours: raise Exception("wrong colour input in opp function")
+		if c = self.colours[0]:
+			return self.colours[1]
+		else:
+			return self.colours[0]
 	
 	def local_to_global(self, i, c):
 		''' Converts a local position w.r.t a colour to a global board position
@@ -43,10 +51,26 @@ class Board(object):
 		else:
 			return (i-self.walk_start_squares[c] + 52)
 
-	# TODO: Complete this method		
-	def exceute_move(self, player_id, move):
+	# TODO: Complete this method		I think this should handle execution except for case where multiple dices are thrown example (6,3)
+	# In that case what will be the input like? one at a time followed by <\n> should handled
+	def exceute_move(self, player_id, move_str):
 		''' Executes a move on the board
 		'''
+		# move will be of form R1_5-> ['R','1','_','5']
+		move = list(move_str)
+		if self.local_positions[move[0]][int(move[1])] == -1: 
+			if int(move[3]) == 1 | int(move[3]) == 6:# Goti khul gayi varna kuch nhi chal skta/invalid move
+				self.local_positions[move[0]][int(move[1])] = 1
+				self.global_positions[move[0]][int(move[1])] = self.start_squares[move[0]]
+		else:# Goti pehle se khuli thee
+			self.local_positions[move[0]][int(move[1])] = (self.local_positions[move[0]][int(move[1])] + int(move[3]))
+			self.global_positions[move[0]][int(move[1])] = self.local_to_global(self.local_positions[move[0]][int(move[1])])
+				if self.global_positions[move[0]][int(move[1])] not in self.safe_squares : 
+					if self.global_positions[move[0]][int(move[1])] in self.global_positions[self.opp(move[0])]:# Goti kat gayi
+						i = self.global_positions[self.opp(move[0])].index(self.global_positions[move[0]][int(move[1])])
+						self.global_positions[self.opp(move[0])][i] = -1
+						self.local_positions[self.opp(move[0])][i] = -1
+				
 		# Look at the local position of the counter, and update it.
 		# Find the global position using local_to_global
 		# Update Global position as well
@@ -55,6 +79,7 @@ class Board(object):
 	def get_best_move(self, player_id, dice):
 		''' Returns the best possible move
 		'''
+		# order -> cutting(aggressive bot), defending(if any opponent near(within 12 steps)), escaping(if meri aadhi badi hui goti(>24) ko bhaga saku danger ke bahar even if it is safe initially), pursuing(agar mere aage doosre ki goti h toh follow it but not cross), opening, frowardmost (if no danger), safing, least in danger
 
 
 start_string = sys.stdin.readline().strip().split(' ')
