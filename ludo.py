@@ -85,6 +85,6 @@ while(True):
 	# TODO: Check winning condition
 	# Wait for opponents move
 	# TODO: Dealing with REPEAT 
-    dice = sys.stdin.readline().strip()
-    move = sys.stdin.readline().strip()
-    board.exceute_move(1-player_id, move)
+	dice = sys.stdin.readline().strip()
+	move = sys.stdin.readline().strip()
+	board.exceute_move(1-player_id, move)
