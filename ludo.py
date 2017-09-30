@@ -16,8 +16,9 @@ class Board(object):
 			self.global_positions = {'B':[-1,-1,-1,-1], 'G':[-1,-1,-1,-1]}
 
 	def opp(self,c):
+		''' Returns the other colour on the board'''
 		if c not in colours: raise Exception("wrong colour input in opp function")
-		if c = self.colours[0]:
+		if c == self.colours[0]:
 			return self.colours[1]
 		else:
 			return self.colours[0]
@@ -58,23 +59,30 @@ class Board(object):
 		'''
 		# move will be of form R1_5-> ['R','1','_','5']
 		move = list(move_str)
-		if self.local_positions[move[0]][int(move[1])] == -1: 
-			if int(move[3]) == 1 | int(move[3]) == 6:# Goti khul gayi varna kuch nhi chal skta/invalid move
-				self.local_positions[move[0]][int(move[1])] = 1
-				self.global_positions[move[0]][int(move[1])] = self.start_squares[move[0]]
+		colour = move[0]
+		counter_no = int(move[1])
+		movement = int(move[3])
+		if self.local_positions[colour][counter_no] == -1: 
+			if (movement == 1 | movement == 6):# Goti khul gayi varna kuch nhi chal skta/invalid move
+				self.local_positions[colour][counter_no] = 1
+				self.global_positions[colour][counter_no] = self.start_squares[colour]
+		# TODO: What if two counters are present on the same square? Can one of them be cut?
 		else:# Goti pehle se khuli thee
-			self.local_positions[move[0]][int(move[1])] = (self.local_positions[move[0]][int(move[1])] + int(move[3]))
-			self.global_positions[move[0]][int(move[1])] = self.local_to_global(self.local_positions[move[0]][int(move[1])])
-				if self.global_positions[move[0]][int(move[1])] not in self.safe_squares : 
-					if self.global_positions[move[0]][int(move[1])] in self.global_positions[self.opp(move[0])]:# Goti kat gayi
-						i = self.global_positions[self.opp(move[0])].index(self.global_positions[move[0]][int(move[1])])
-						self.global_positions[self.opp(move[0])][i] = -1
-						self.local_positions[self.opp(move[0])][i] = -1
-				
-		# Look at the local position of the counter, and update it.
-		# Find the global position using local_to_global
-		# Update Global position as well
+			self.local_positions[colour][counter_no] += movement
+			current_local = self.local_positions[colour][counter_no]
+			self.global_positions[colour][counter_no] = self.local_to_global(current_local, colour)
+			current_global = self.global_positions[colour][counter_no]
+			if current_global not in self.safe_squares: 
+				if current_global in self.global_positions[self.opp(colour)]:# Goti kat gayi
+						opp_colour = self.opp(colour)
+						i = self.global_positions[opp_colour].index(current_global)
+						self.global_positions[opp_colour][i] = -1
+						self.local_positions[opp_colour][i] = -1
 
+	# TODO: Complete this method to double check we don't make a mistake
+	def is_valid_move(self, move, player_id):
+		'''Returns True is a given move is valid, False otherwise
+		'''
 	# TODO: Complete this method
 	def get_best_move(self, player_id, dice):
 		''' Returns the best possible move
