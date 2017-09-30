@@ -84,6 +84,7 @@ class Board(object):
 		for i in self.board_objects:
 			for j in self.board_objects[i]:
 				self.canvas.delete(j)
+				self.canvas.delete(j+1)
 		# Redraw all counters, keep updating board_objects
 		if self.colours[0]=='B':
 			for i in xrange(4):
@@ -232,10 +233,18 @@ def play_game(board):
 		board.execute_move(player_id, best_move)
 		# TODO: Check winning condition
 		# Wait for opponents move
-		# TODO: Dealing with REPEAT 
 		dice = sys.stdin.readline().strip()
+		if (dice=='REPEAT'):
+			continue
 		move = sys.stdin.readline().strip()
-		board.execute_move(1-player_id, move)
+		temp_move = move.split('<next>')
+		if temp_move[-1]=='REPEAT':
+			board.execute_move(1-player_id, move)
+			dice = sys.stdin.readline().strip()
+			move = sys.stdin.readline().strip()
+			board.execute_move(1-player_id, move)
+		else:
+			board.execute_move(1-player_id, move)			
 
 if (args.noBoard):
 	play_game(board)
