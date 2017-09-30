@@ -165,6 +165,7 @@ class Board(object):
 		''' Executes a move on the board
 		'''
 		# move will be of form R1_5-> ['R','1','_','5']
+		# TODO: Handle  moves with multiple counters and REPEAT at the end, eg: R0_5<next>R1_3<REPEAT>
 		move = list(move_str)
 		colour = move[0]
 		counter_no = int(move[1])
