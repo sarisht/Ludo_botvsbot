@@ -231,12 +231,14 @@ class Board(object):
 	def get_best_move(self, player_id, dice,execute = False):
 		''' Returns the best possible move
 		'''
+		sys.stderr.write("got insode best move")
 		if dice == [0]: return('NA',1)# if dice rolled is 666
 		if len(dice)== 1: # i.e. single throw (in base form no 6)
 			roll = dice[0]
 			player_col = self.colours[player_id]
 			ini = self.local_positions[player_col]#initial positions
 			ini_glob = self.global_positions[player_col]
+			sys.stderr.write(str(ini)+"\n"+str(ini_glob)+"\n checking if the positions are not none")			
 			opp = self.global_positions[self.opp(player_col)]# opponent position
 			# checking for cutting
 			for ctr_num in range(4):
@@ -380,8 +382,12 @@ class Board(object):
 					pass
 			# forwardmost without endangering that
 			def sort(l1,b):
-				return copy.copy(l1).sort(reverse=b) # copy.copy used as I dont want l1 to get changed, b is for descending
- 			for c in sort(ini,True):
+				k = copy.copy(l1)
+				k.sort(reverse=b)
+				return k# copy.copy used as I dont want l1 to get changed, b is for descending
+			
+			sys.stderr.write(str(sort(ini,True))+"debugging")			
+			for c in sort(ini,True):
 				ctr_num = ini.index(c)
 				if c == 0: break
 				if C == -1: break
