@@ -1,16 +1,11 @@
 import sys
 from Tkinter import *
 from threading import Thread
-import argparse
 import copy
-
-parser = argparse.ArgumentParser()
-parser.add_argument("--noBoard", help="Doesn't display the GUI board", action="store_true")
-args = parser.parse_args()
 
 class Board(object):
 	"""Class for storing the current state of the game and moves"""
-	def __init__(self, game_mode, player_id, gui_enable=False):
+	def __init__(self, game_mode, player_id, gui_enable):
 		self.gui_enable = gui_enable
 		self.start_squares = {'G':1, 'Y':14, 'B':27, 'R':40}
 		self.walk_start_squares = {'G':53, 'Y':58, 'B':63, 'R':68}
@@ -25,10 +20,34 @@ class Board(object):
 			self.colours = ['B', 'G']
 			self.local_positions = {'B':[-1,-1,-1,-1], 'G':[-1,-1,-1,-1]}
 			self.global_positions = {'B':[-1,-1,-1,-1], 'G':[-1,-1,-1,-1]}
+
 	def draw_counter(self, position, colour, txt, canvas):
 		val = canvas.create_oval(position[0],position[1],position[0]+40,position[1]+40,fill=colour)
 		canvas.create_text(position[0]+20, position[1]+20, fill="white", text=txt, font=(40))
 		return val
+	
+	def draw_squares(self):
+		self.canvas.create_rectangle(0,0,240,240,fill="red")
+		self.canvas.create_rectangle(360,0,600,240,fill="green")
+		self.canvas.create_rectangle(0,360,240,600,fill="blue")
+		self.canvas.create_rectangle(360,360,600,600,fill="yellow")
+		self.canvas.create_rectangle(240,240,360,360,fill="gray")
+		self.canvas.create_rectangle(80,80,160,160,fill="white")
+		self.canvas.create_rectangle(440,80,520,160,fill="white")
+		self.canvas.create_rectangle(80,440,160,520,fill="white")
+		self.canvas.create_rectangle(440,440,520,520,fill="white")
+		for i in xrange(1,73):
+			if (i in self.safe_squares or i>=53):
+				if (i==1 or i==48 or (i>=53 and i<=57)):
+					self.canvas.create_rectangle(self.x_coord[i],self.y_coord[i],self.x_coord[i]+40,self.y_coord[i]+40,fill="green",width=2)
+				elif (i==9 or i==14 or (i>=58 and i<=62)):
+					self.canvas.create_rectangle(self.x_coord[i],self.y_coord[i],self.x_coord[i]+40,self.y_coord[i]+40,fill="yellow",width=2)
+				elif (i==22 or i==27 or (i>=63 and i<=67)):
+					self.canvas.create_rectangle(self.x_coord[i],self.y_coord[i],self.x_coord[i]+40,self.y_coord[i]+40,fill="blue",width=2)
+				else:
+					self.canvas.create_rectangle(self.x_coord[i],self.y_coord[i],self.x_coord[i]+40,self.y_coord[i]+40,fill="red",width=2)
+			else:
+				self.canvas.create_rectangle(self.x_coord[i],self.y_coord[i],self.x_coord[i]+40,self.y_coord[i]+40,fill="white",width=2)
 
 	def intialize_board(self):
 		self.tk_obj = Tk()
@@ -68,56 +87,56 @@ class Board(object):
 					self.canvas.create_rectangle(self.x_coord[i],self.y_coord[i],self.x_coord[i]+40,self.y_coord[i]+40,fill="red",width=2)
 			else:
 				self.canvas.create_rectangle(self.x_coord[i],self.y_coord[i],self.x_coord[i]+40,self.y_coord[i]+40,fill="white",width=2)
-		if self.colours[0]=='B':
-			self.board_objects = {'B':[-1,-1,-1,-1], 'G':[-1,-1,-1,-1]}
-			for i in xrange(4):
-				self.board_objects['B'][i] = self.draw_counter(self.home_squares['B'][i], "blue", i, self.canvas)
-				self.board_objects['G'][i] = self.draw_counter(self.home_squares['G'][i], "green", i, self.canvas)
-		else:
-			self.board_objects = {'R':[-1,-1,-1,-1], 'Y':[-1,-1,-1,-1]}
-			for i in xrange(4):
-				self.board_objects['R'][i] = self.draw_counter(self.home_squares['R'][i], "red", i, self.canvas)
-				self.board_objects['Y'][i] = self.draw_counter(self.home_squares['Y'][i], "yellow", i, self.canvas)
+		self.draw_counters()
+		# if self.colours[0]=='B':
+		# 	for i in xrange(4):
+		# 		self.draw_counter(self.home_squares['B'][i], "blue", i, self.canvas)
+		# 		self.draw_counter(self.home_squares['G'][i], "green", i, self.canvas)
+		# else:
+		# 	for i in xrange(4):
+		# 		self.draw_counter(self.home_squares['R'][i], "red", i, self.canvas)
+		# 		self.draw_counter(self.home_squares['Y'][i], "yellow", i, self.canvas)
 
-	def refresh_counters(self):
-		# First delete all existing counters
-		for i in self.board_objects:
-			for j in self.board_objects[i]:
-				self.canvas.delete(j)
-				self.canvas.delete(j+1)
+	def draw_counters(self):
 		# Redraw all counters, keep updating board_objects
 		if self.colours[0]=='B':
 			for i in xrange(4):
 				if self.global_positions['B'][i]==-1:
-					self.board_objects['B'][i] = self.draw_counter(self.home_squares['B'][i], "blue", i, self.canvas)
+					self.draw_counter(self.home_squares['B'][i], "blue", i, self.canvas)
 				elif self.global_positions['B'][i]!=0:
 					g_pos = self.global_positions['B'][i]
-					self.board_objects['B'][i] = self.draw_counter((self.x_coord[g_pos],self.y_coord[g_pos]), "blue", i, self.canvas)
+					self.draw_counter((self.x_coord[g_pos],self.y_coord[g_pos]), "blue", i, self.canvas)
 			for i in xrange(4):
 				if self.global_positions['G'][i]==-1:
-					self.board_objects['G'][i] = self.draw_counter(self.home_squares['G'][i], "green", i, self.canvas)
+					self.draw_counter(self.home_squares['G'][i], "green", i, self.canvas)
 				elif self.global_positions['G'][i]!=0:
 					g_pos = self.global_positions['G'][i]
-					self.board_objects['G'][i] = self.draw_counter((self.x_coord[g_pos],self.y_coord[g_pos]), "green", i, self.canvas)
+					self.draw_counter((self.x_coord[g_pos],self.y_coord[g_pos]), "green", i, self.canvas)
 		else:
 			for i in xrange(4):
 				if self.global_positions['R'][i]==-1:
-					self.board_objects['R'][i] = self.draw_counter(self.home_squares['R'][i], "red", i, self.canvas)
+					self.draw_counter(self.home_squares['R'][i], "red", i, self.canvas)
 				elif self.global_positions['R'][i]!=0:
 					g_pos = self.global_positions['R'][i]
-					self.board_objects['R'][i] = self.draw_counter((self.x_coord[g_pos],self.y_coord[g_pos]), "red", i, self.canvas)
+					self.draw_counter((self.x_coord[g_pos],self.y_coord[g_pos]), "red", i, self.canvas)
 			for i in xrange(4):
 				if self.global_positions['Y'][i]==-1:
-					self.board_objects['Y'][i] = self.draw_counter(self.home_squares['Y'][i], "yellow", i, self.canvas)
+					self.draw_counter(self.home_squares['Y'][i], "yellow", i, self.canvas)
 				elif self.global_positions['Y'][i]!=0:
 					g_pos = self.global_positions['Y'][i]
-					self.board_objects['Y'][i] = self.draw_counter((self.x_coord[g_pos],self.y_coord[g_pos]), "yellow", i, self.canvas)
+					self.draw_counter((self.x_coord[g_pos],self.y_coord[g_pos]), "yellow", i, self.canvas)
 
+	def refresh_counters(self):
+		# First delete all existing counters
+		self.canvas.delete("all")
+		sys.stderr.write("Deleted everything\n")
+		self.draw_squares()
+		self.draw_counters()
 
 	def opp(self,c):
 		''' Returns the other colour on the board'''
-		if c not in colours: raise Exception("wrong colour input in opp function")
-		if c == self.colours[0]:
+		if c not in self.colours: raise Exception("wrong colour input in opp function")
+		elif c == self.colours[0]:
 			return self.colours[1]
 		else:
 			return self.colours[0]
@@ -165,28 +184,34 @@ class Board(object):
 		''' Executes a move on the board
 		'''
 		# move will be of form R1_5-> ['R','1','_','5']
-		# TODO: Handle  moves with multiple counters and REPEAT at the end, eg: R0_5<next>R1_3<REPEAT>
-		move = list(move_str)
-		colour = move[0]
-		counter_no = int(move[1])
-		movement = int(move[3])
-		if self.local_positions[colour][counter_no] == -1: 
-			if (movement == 1 | movement == 6):# Goti khul gayi varna kuch nhi chal skta/invalid move
-				self.local_positions[colour][counter_no] = 1
-				self.global_positions[colour][counter_no] = self.start_squares[colour]
-		# TODO: What if two counters are present on the same square? Can one of them be cut?
-		else:# Goti pehle se khuli thee
-			self.local_positions[colour][counter_no] += movement
-			current_local = self.local_positions[colour][counter_no]
-			self.global_positions[colour][counter_no] = self.local_to_global(current_local, colour)
-			current_global = self.global_positions[colour][counter_no]
-			if current_global not in self.safe_squares: 
-				if current_global in self.global_positions[self.opp(colour)]:# Goti kat gayi
-						opp_colour = self.opp(colour)
-						i = self.global_positions[opp_colour].index(current_global)
-						self.global_positions[opp_colour][i] = -1
-						self.local_positions[opp_colour][i] = -1
+		sys.stderr.write("execute_move\n")
+		if (move_str=='NA'):
+			return
+		moves = move_str.split('<next>')
+		for move in moves:
+			if move=='REPEAT':
+				continue
+			move = list(move_str)
+			colour = move[0]
+			counter_no = int(move[1])
+			movement = int(move[3])
+			if self.local_positions[colour][counter_no] == -1: 
+				if (movement == 1 or movement == 6):# Goti khul gayi varna kuch nhi chal skta/invalid move
+					self.local_positions[colour][counter_no] = 1
+					self.global_positions[colour][counter_no] = self.start_squares[colour]
+			else:# Goti pehle se khuli thee
+				self.local_positions[colour][counter_no] += movement
+				current_local = self.local_positions[colour][counter_no]
+				self.global_positions[colour][counter_no] = self.local_to_global(current_local, colour)
+				current_global = self.global_positions[colour][counter_no]
+				if current_global not in self.safe_squares: 
+					if current_global in self.global_positions[self.opp(colour)]:# Goti kat gayi
+							opp_colour = self.opp(colour)
+							i = self.global_positions[opp_colour].index(current_global)
+							self.global_positions[opp_colour][i] = -1
+							self.local_positions[opp_colour][i] = -1
 		if (self.gui_enable):
+			sys.stderr.write("Rendering the board again\n")
 			self.refresh_counters()
 
 	# TODO: Complete this method to double check we don't make a mistake
@@ -194,13 +219,22 @@ class Board(object):
 		'''Returns True is a given move is valid, False otherwise
 		'''
 	# TODO: Complete this method
+	def gagan_get_best_move(self, player_id, dice):
+		# Case when dice rolls 6,6,6 return NA
+		if dice==[0]:
+			return 'NA'
+		# If all counters are closed, check if they can be opened
+
+
+		# Pick a counter and try to advance it as much, if possible
+
 	def get_best_move(self, player_id, dice,execute = False):
 		''' Returns the best possible move
 		'''
-		if dice = [0]: return('NaN',1)# if dice rolled is 666
+		if dice == [0]: return('NA',1)# if dice rolled is 666
 		if len(dice)== 1: # i.e. single throw (in base form no 6)
 			roll = dice[0]
-			player_col = self.colour[player_id]
+			player_col = self.colours[player_id]
 			ini = self.local_positions[player_col]#initial positions
 			ini_glob = self.global_positions[player_col]
 			opp = self.global_positions[self.opp(player_col)]# opponent position
@@ -208,10 +242,10 @@ class Board(object):
 			for ctr_num in range(4):
 				ini_c = ini_glob[ctr_num]
 				if ini_c > 52 : continue # home lane
-				poss_c = local_to_global(ini[ctr_num]+roll,player_col)	
-				if poss_c in self.safe_squares: continue # person on safe sqaure
 				if ini_c == 0:continue # completed
 				if ini_c ==-1 : continue # unopened
+				poss_c = self.local_to_global(ini[ctr_num]+roll,player_col)	
+				if poss_c in self.safe_squares: continue # person on safe sqaure
 				if poss_c in opp: 
 					str1 = player_col + str(ctr_num) + '_' + str(roll) #cutting....Scope: Case-Multiple cuttings..........
 					if execute: self.execute_move(player_id,str1)#execution of cutting					
@@ -220,10 +254,10 @@ class Board(object):
 			for ctr_num in range(4):
 				ini_c = ini_glob[ctr_num]
 				if ini_c > 52 : continue # home lane
-				poss_c = local_to_global(ini[ctr_num]+roll,player_col)	
-				if ini_c in self.safe_squares: continue # I am not in danger
 				if ini_c == 0:continue # completed
 				if ini_c ==-1 : continue # unopened
+				poss_c = self.local_to_global(ini[ctr_num]+roll,player_col)	
+				if ini_c in self.safe_squares: continue # I am not in danger
 				for opp_c in opp: 
 					if opp_c == -1: continue # opponent unopened
 					if opp_c >52:continue # opponent on home lane
@@ -247,9 +281,9 @@ class Board(object):
 				for ctr_num in range(4):
 					ini_c = ini_glob[ctr_num]
 					if ini_c > 52 : continue # home lane
-					poss_c = local_to_global(ini[ctr_num]+roll,player_col)
 					if ini_c == 0:continue # completed
 					if ini_c ==-1 : continue # unopened
+					poss_c = local_to_global(ini[ctr_num]+roll,player_col)
 					if poss_c > 27:
 						boolean = True
 						for opp_c in opp: 
@@ -274,9 +308,9 @@ class Board(object):
 			for ctr_num in range(4):
 				ini_c = ini_glob[ctr_num]
 				if ini_c > 52 : continue # home lane
-				poss_c = local_to_global(ini[ctr_num]+roll,player_col)
 				if ini_c == 0:continue # completed
 				if ini_c ==-1 : continue # unopened
+				poss_c = local_to_global(ini[ctr_num]+roll,player_col)
 				for opp_c in opp: # doesnt matter if opponent is sitting on safe square, he has to move at some point
 					# Scope: Check if this move decreases my own safety..........
 					if opp_c == -1: continue # opponent unopened
@@ -302,13 +336,13 @@ class Board(object):
 				if ini[ctr_num] <= 27: continue
 				ini_c = ini_glob[ctr_num]
 				if ini_c > 52 : continue # home lane
+				if ini_c == 0: continue # completed
+				if ini_c ==-1: continue # unopened
 				poss_c = local_to_global(ini[ctr_num]+roll,player_col)
 				if poss_c in self.safe_squares: # If I reach a safe square
 					str1 = player_col + str(ctr_num) + '_' + str(roll)
 					if execute: self.execute_move(player_id,str1)
 					return (str1,6)
-				if ini_c == 0: continue # completed
-				if ini_c ==-1: continue # unopened
 				for opp_c in opp: 
 					if opp_c == -1: continue     # opponent unopened
 					if opp_c >  52: continue     # opponent on home lane
@@ -328,7 +362,7 @@ class Board(object):
 			for ctr_num in range(4):
 				ini_c = ini_glob[ctr_num]
 				if ini_c > 52 : continue # home lane
-				poss_c = local_to_global(ini[ctr_num]+roll,player_col)
+				poss_c = self.local_to_global(ini[ctr_num]+roll,player_col)
 				if poss_c in self.safe_squares: # If I reach a safe square
 					str1 = player_col + str(ctr_num) + '_' + str(roll)
 					if execute: self.execute_move(player_id,str1)
@@ -386,7 +420,7 @@ class Board(object):
 				except:
 					pass
 			# if I cant move anything
-			return ('NaN',14)
+			return ('NA',14)
 		elif len(dice) == 2:# dice will be of the form [6,x]
 			roll = dice[1]
 			a,b = self.get_best_move(player_id, [roll])
@@ -415,25 +449,25 @@ class Board(object):
 			e,f = self.get_best_move(player_id, [6+roll])
 			g,h = self.get_best_move(player_id, [12])
 			i,j = self.get_best_move(player_id, [12+roll])
-			if b = max([b,d,f,h,j]):
+			if b == max([b,d,f,h,j]):
 				temp = copy.deepcopy(self)
 				temp.execute_move(player_id,a)
 				k, l = temp.get_best_move(player_id,[6,6])
 				str_1 = a +'<next>' +k
 				return(str_1,min(b,l))
-			elif d = max([b,d,f,h,j]):
+			elif d == max([b,d,f,h,j]):
 				temp = copy.deepcopy(self)
 				temp.execute_move(player_id,c)
 				k, l = temp.get_best_move(player_id,[6,roll])
 				str_1 = c +'<next>' + k
 				return(str_1,min(d,l))
-			elif f = max([b,d,f,h,j]):
+			elif f == max([b,d,f,h,j]):
 				temp = copy.deepcopy(self)
 				temp.execute_move(player_id,e)
 				k, l = temp.get_best_move(player_id,[6])
 				str_1 = e +'<next>' + k
 				return(str_1,min(f,l))
-			elif h = max([b,d,f,h,j]):
+			elif h == max([b,d,f,h,j]):
 				temp = copy.deepcopy(self)
 				temp.execute_move(player_id,g)
 				k, l = temp.get_best_move(player_id,[roll])
@@ -456,11 +490,13 @@ start_string = [int(i) for i in start_string]
 player_id = start_string[0] - 1 # Get player id to be 0 or 1
 time_limit = start_string[1]
 game_mode = start_string[2]
+draw_board = start_string[3]
 
-if args.noBoard:
-	board = Board(game_mode, False)
+if draw_board==1:
+	sys.stderr.write("GUI Mode on\n")
+	board = Board(game_mode,player_id, True)
 else:
-	board = Board(game_mode, True)
+	board = Board(game_mode,player_id, False)
 
 
 def play_game(board):
@@ -474,12 +510,18 @@ def play_game(board):
 		sys.stdout.write('<THROW>\n')
 		sys.stdout.flush()
 		dice = sys.stdin.readline().strip()
+		if (dice == 'YOU ROLLED 3 SIXES, AND THUS A DUCK'):
+			dice = [0]
+		else:
+			dice = dice[11:]
+			dice = dice.split(' ')
+			dice = [int(i) for i in dice]
 		best_move = board.get_best_move(player_id, dice)
 		# TODO: Find the best move for player_id, dice
 		# and update this move on the board (Add the get_best_move method)
-		sys.stdout.write(best_move)
+		sys.stdout.write(best_move[0])
 		sys.stdout.flush()
-		board.execute_move(player_id, best_move)
+		board.execute_move(player_id, best_move[0])
 		# TODO: Check winning condition
 		# Wait for opponents move
 		dice = sys.stdin.readline().strip()
@@ -495,12 +537,12 @@ def play_game(board):
 		else:
 			board.execute_move(1-player_id, move)			
 
-if (args.noBoard):
-	play_game(board)
-
-else:
+if (draw_board==1):
 	Th = Thread(target = lambda : play_game(board))
 	Th.start()
 	board.intialize_board()
 	board.tk_obj.mainloop()
+
+else:
+	play_game(board)
 
