@@ -365,10 +365,10 @@ class Board(object):
 				try: # if local_to_global gets input > 57 then exception case
 					ini_l_c = ini[ctr_num]
 					poss_c = self.local_to_global(ini_l_c+roll,player_col)
-					if poss_c >52 or poss_c==0: 
+					if poss_c==0: 
 						str1 = player_col + str(ctr_num) + '_' + str(roll)
 						if execute: self.execute_move(player_id,str1)
-						if poss_c>52 or poss_c==0 : return (str1,5)
+						return (str1,5)
 				except:
 					continue
 			# if my counter is ahead within 12 distance of opposition(no immediate danger but danger still)(only for local counters greater than 27)
@@ -441,7 +441,7 @@ class Board(object):
 					if poss_c in self.safe_squares:
 						str1 = player_col + str(ctr_num) + '_' + str(roll)
 						if execute: self.execute_move(player_id,str1)
-						if poss_c not in ini_glob or poss_c in self.safe_squares or poss_c ==0 : return (str1,11)
+						if poss_c not in ini_glob or poss_c in self.safe_squares or poss_c ==0  or poss_c>52: return (str1,11)
 					boolean = True
 					for opp_c2 in opp:# Scope: If a counter under threat from multiple opposition counters..........
 						if opp_c2 == -1: continue # opponent unopened
@@ -453,7 +453,7 @@ class Board(object):
 					if boolean:
 							str1 = player_col + str(ctr_num) + '_' + str(roll)
 							if execute: self.execute_move(player_id,str1)
-							if poss_c not in ini_glob or poss_c in self.safe_squares or poss_c ==0 : return (str1,12)
+							if poss_c not in ini_glob or poss_c in self.safe_squares or poss_c ==0  or poss_c>52: return (str1,12)
 				except:
 					continue
 			# if all go in danger
