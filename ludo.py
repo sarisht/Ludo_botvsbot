@@ -7,6 +7,8 @@ class Board(object):
 	"""Class for storing the current state of the game and moves"""
 	def __init__(self, game_mode, player_id, gui_enable):
 		self.gui_enable = gui_enable
+		self.game_mode = game_mode
+		self.player_id - player_id
 		self.start_squares = {'G':1, 'Y':14, 'B':27, 'R':40}
 		self.walk_start_squares = {'G':53, 'Y':58, 'B':63, 'R':68}
 		self.safe_squares = [1,9,14,22,27,35,40,48]
@@ -97,11 +99,15 @@ class Board(object):
 		# 		self.draw_counter(self.home_squares['R'][i], "red", i, self.canvas)
 		# 		self.draw_counter(self.home_squares['Y'][i], "yellow", i, self.canvas)
 	def copy_board(self):
+		def copy_board(self):
 		c_board = Board(self.game_mode, self.player_id, False)
-		c_board.colours = self.colours
-		c_board.local_positions = self.global_positions
-		c_board.global_positions = self.global_positions
+		c_board.colours = copy.deepcopy(self.colours)
+		c_board.local_positions = copy.deepcopy(self.local_positions)
+		# {i:self.local_positions[i] for  i in self.local_positions}
+		c_board.global_positions = copy.deepcopy(self.global_positions)
+		# {i:self.global_positions[i] for i in self.global_positions}
 		return c_board
+	
 	def draw_counters(self):
 		# Redraw all counters, keep updating board_objects
 		if self.colours[0]=='B':
@@ -569,8 +575,8 @@ def play_game(board):
 
 if (draw_board==1):
 	Th = Thread(target = lambda : play_game(board))
-	Th.start()
 	board.intialize_board()
+	Th.start()
 	board.tk_obj.mainloop()
 
 else:
