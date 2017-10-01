@@ -414,18 +414,6 @@ class Board(object):
 						if poss_c not in ini_glob or poss_c in self.safe_squares or poss_c ==0 : return (str1,9)
 				except:
 					continue
-			# moving inside home lane
-			for ctr_num in range(4):
-				try:
-					ini_c = ini_glob[ctr_num]
-					if ini_c == 0: continue
-					poss_c = self.local_to_global(ini[ctr_num]+roll,player_col)
-					if poss_c >= 52: # If I reach a home lane
-						str1 = player_col + str(ctr_num) + '_' + str(roll)
-						if execute: self.execute_move(player_id,str1)
-						if poss_c not in ini_glob or poss_c in self.safe_squares or poss_c ==0 : return (str1,10)
-				except:
-					continue
 			# forwardmost without endangering that
 			def sort(l1,b):
 				k = copy.copy(l1)
