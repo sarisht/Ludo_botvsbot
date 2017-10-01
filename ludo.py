@@ -240,16 +240,22 @@ class Board(object):
 		# Pick a counter and try to advance it as much, if possible
 
 	def get_best_move(self, player_id, dice,execute = False):
+		sys.stderr.write("Initial config: "+ str(self.global_positions)+"\n")
 		''' Returns the best possible move
 		'''
-		if dice == [0]: return('NA',1)# if dice rolled is 666
+		if dice == [0]: 
+			sys.stderr.write("dice rolled is 6 6 6\n")
+			return('NA',1)# if dice rolled is 666
+			
 		if len(dice)== 1: # i.e. single throw (in base form no 6)
 			roll = dice[0]
+			sys.stderr.write("dice: "+ str(roll)+"\n")
 			player_col = self.colours[player_id]
 			ini = self.local_positions[player_col]#initial positions
 			ini_glob = self.global_positions[player_col]
 			opp = self.global_positions[self.opp(player_col)]# opponent position
 			# checking for cutting
+			sys.stderr.write("Trying to cut"+"\n")
 			for ctr_num in range(4):
 				try:
 					ini_c = ini_glob[ctr_num]
@@ -261,9 +267,13 @@ class Board(object):
 					if poss_c in opp: 
 						str1 = player_col + str(ctr_num) + '_' + str(roll) #cutting....Scope: Case-Multiple cuttings..........
 						if execute: self.execute_move(player_id,str1)#execution of cutting					
-						return (str1,1)
-				except: pass
+						if poss_c not in ini_glob or poss_c in self.safe_squares or poss_c ==0 : return (str1,1)
+				except: 
+					sys.stderr.write("Not possible: "+ str(ini_c) + " roll"+ str(roll)+"\n")
+					continue
 			# if my counter is ahead within 6 distance of opposition
+
+			sys.stderr.write("Trying to defend (within 6)"+"\n")
 			for ctr_num in range(4):
 				ini_c = ini_glob[ctr_num]
 				if ini_c > 52 : continue # home lane
@@ -290,18 +300,19 @@ class Board(object):
 							if boolean:
 								str1 = player_col + str(ctr_num) + '_' + str(roll)
 								if execute: self.execute_move(player_id,str1)
-								return (str1,2)
-				except: pass
+								if poss_c not in ini_glob or poss_c in self.safe_squares or poss_c ==0 : return (str1,2)
+				except: continue
 			# escaping with large number
+			sys.stderr.write("Trying to escape"+"\n")
 			if roll>6:
 				for ctr_num in range(4):
 					ini_c = ini_glob[ctr_num]
 					if ini_c > 52 : continue # home lane
-					if ini_c == 0:continue # completed
+					if ini_c == 0 : continue # completed
 					if ini_c ==-1 : continue # unopened
 					try:
 						poss_c = self.local_to_global(ini[ctr_num]+roll,player_col)
-						if poss_c > 27:
+						if global_to_local(poss_c,player_id) > 27:
 							boolean = True
 							for opp_c in opp: 
 								if opp_c == -1: continue # opponent unopened
@@ -313,9 +324,10 @@ class Board(object):
 							if boolean:
 								str1 = player_col + str(ctr_num) + '_' + str(roll)
 								if execute: self.execute_move(player_id,str1)
-								return (str1,2.5)
-					except: pass
+								if poss_c not in ini_glob or poss_c in self.safe_squares or poss_c ==0 : return (str1,2.5)
+					except: continue
 			# open with 1
+			sys.stderr.write("Trying to open with 1"+"\n")
 			if roll == 1:
 				for ctr_num in range(4):
 					if ini_glob[ctr_num]==-1:
@@ -323,6 +335,7 @@ class Board(object):
 						if execute: self.execute_move(player_id,str1)
 						return (str1,3)
 			# if my predicted counter is behind within 6 distance of opposition
+			sys.stderr.write("Trying to follow"+"\n")
 			for ctr_num in range(4):
 				ini_c = ini_glob[ctr_num]
 				if ini_c > 52 : continue # home lane
@@ -338,9 +351,10 @@ class Board(object):
 						if (opp_c - poss_c)%52 <= 6:
 							str1 = player_col + str(ctr_num) + '_' + str(roll)
 							if execute: self.execute_move(player_id,str1)
-							return (str1,4)
-				except: pass
+							if poss_c not in ini_glob or poss_c in self.safe_squares or poss_c ==0 : return (str1,4)
+				except: continue
 			# homing for extra move
+			sys.stderr.write("Trying to get into final state"+"\n")
 			for ctr_num in range(4):
 				try: # if local_to_global gets input > 57 then exception case
 					ini_l_c = ini[ctr_num]
@@ -348,14 +362,14 @@ class Board(object):
 					if poss_c == 0: 
 						str1 = player_col + str(ctr_num) + '_' + str(roll)
 						if execute: self.execute_move(player_id,str1)
-						return (str1,5)
+						if poss_c not in ini_glob or poss_c in self.safe_squares or poss_c ==0 : return (str1,5)
 				except:
-					pass
+					continue
 			# if my counter is ahead within 12 distance of opposition(no immediate danger but danger still)(only for local counters greater than 27)
 			for ctr_num in range(4):
 				if ini[ctr_num] <= 27: continue
 				ini_c = ini_glob[ctr_num]
-				if ini_c > 52 : continue # home lane
+				if ini_c > 52: continue # home lane
 				if ini_c == 0: continue # completed
 				if ini_c ==-1: continue # unopened
 				try: 
@@ -363,7 +377,7 @@ class Board(object):
 					if poss_c in self.safe_squares: # If I reach a safe square
 						str1 = player_col + str(ctr_num) + '_' + str(roll)
 						if execute: self.execute_move(player_id,str1)
-						return (str1,6)
+						if poss_c not in ini_glob or poss_c in self.safe_squares or poss_c ==0 : return (str1,6)
 					for opp_c in opp: 
 						if opp_c == -1: continue     # opponent unopened
 						if opp_c >  52: continue     # opponent on home lane
@@ -371,15 +385,15 @@ class Board(object):
 						if (ini_c - opp_c)%52 <= 12: # Scope: If multiple counters are under threat......................
 							str1 = player_col + str(ctr_num) + '_' + str(roll)
 							if execute: self.execute_move(player_id,str1)
-							return (str1,7)
-				except:pass
+							if poss_c not in ini_glob or poss_c in self.safe_squares or poss_c ==0 : return (str1,7)
+				except:continue
 			# opening with 6
 			if roll == 6:
 				for ctr_num in range(4):
 					if ini_glob[ctr_num]==-1:
 						str1 = player_col + str(ctr_num) + '_' + str(roll)
 						if execute: self.execute_move(player_id,str1)
-						return (str1,8)
+						if poss_c not in ini_glob or poss_c in self.safe_squares or poss_c ==0 : return (str1,8)
 			# safing
 			for ctr_num in range(4):
 				ini_c = ini_glob[ctr_num]
@@ -391,9 +405,9 @@ class Board(object):
 					if poss_c in self.safe_squares: # If I reach a safe square
 						str1 = player_col + str(ctr_num) + '_' + str(roll)
 						if execute: self.execute_move(player_id,str1)
-						return (str1,9)
+						if poss_c not in ini_glob or poss_c in self.safe_squares or poss_c ==0 : return (str1,9)
 				except:
-					pass
+					continue
 			# moving inside home lane
 			for ctr_num in range(4):
 				try:
@@ -403,9 +417,9 @@ class Board(object):
 					if poss_c >= 52: # If I reach a home lane
 						str1 = player_col + str(ctr_num) + '_' + str(roll)
 						if execute: self.execute_move(player_id,str1)
-						return (str1,10)
+						if poss_c not in ini_glob or poss_c in self.safe_squares or poss_c ==0 : return (str1,10)
 				except:
-					pass
+					continue
 			# forwardmost without endangering that
 			def sort(l1,b):
 				k = copy.copy(l1)
@@ -421,7 +435,7 @@ class Board(object):
 					if poss_c in self.safe_squares:
 						str1 = player_col + str(ctr_num) + '_' + str(roll)
 						if execute: self.execute_move(player_id,str1)
-						return (str1,11)
+						if poss_c not in ini_glob or poss_c in self.safe_squares or poss_c ==0 : return (str1,11)
 					boolean = True
 					for opp_c2 in opp:# Scope: If a counter under threat from multiple opposition counters..........
 						if opp_c2 == -1: continue # opponent unopened
@@ -433,9 +447,9 @@ class Board(object):
 					if boolean:
 							str1 = player_col + str(ctr_num) + '_' + str(roll)
 							if execute: self.execute_move(player_id,str1)
-							return (str1,12)
+							if poss_c not in ini_glob or poss_c in self.safe_squares or poss_c ==0 : return (str1,12)
 				except:
-					pass
+					continue
 			# if all go in danger
 			for c in sort(ini, False):
 				ctr_num = ini.index(c)
@@ -446,9 +460,9 @@ class Board(object):
 					poss_c = self.local_to_global(ini[ctr_num]+roll,player_col)	
 					str1 = player_col + str(ctr_num) + '_' + str(roll)
 					if execute: self.execute_move(player_id,str1)
-					return (str1,13)
+					if poss_c not in ini_glob or poss_c in self.safe_squares or poss_c ==0 : return (str1,13)
 				except:
-					pass
+					continue
 			# if I cant move anything
 			return ('NA',14)
 		elif len(dice) == 2:# dice will be of the form [6,x]
