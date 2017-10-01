@@ -283,7 +283,7 @@ class Board(object):
 					if ini_c > 52 : continue # home lane
 					if ini_c == 0:continue # completed
 					if ini_c ==-1 : continue # unopened
-					poss_c = local_to_global(ini[ctr_num]+roll,player_col)
+					poss_c = self.local_to_global(ini[ctr_num]+roll,player_col)
 					if poss_c > 27:
 						boolean = True
 						for opp_c in opp: 
@@ -324,7 +324,7 @@ class Board(object):
 			for ctr_num in range(4):
 				try: # if local_to_global gets input > 57 then exception case
 					ini_l_c = ini[ctr_num]
-					poss_c = local_to_global(ini_l_c+roll,player_col)
+					poss_c = self.local_to_global(ini_l_c+roll,player_col)
 					if poss_c == 0: 
 						str1 = player_col + str(ctr_num) + '_' + str(roll)
 						if execute: self.execute_move(player_id,str1)
@@ -338,7 +338,7 @@ class Board(object):
 				if ini_c > 52 : continue # home lane
 				if ini_c == 0: continue # completed
 				if ini_c ==-1: continue # unopened
-				poss_c = local_to_global(ini[ctr_num]+roll,player_col)
+				poss_c = self.local_to_global(ini[ctr_num]+roll,player_col)
 				if poss_c in self.safe_squares: # If I reach a safe square
 					str1 = player_col + str(ctr_num) + '_' + str(roll)
 					if execute: self.execute_move(player_id,str1)
@@ -371,7 +371,7 @@ class Board(object):
 			for ctr_num in range(4):
 				try:
 					ini_c = ini_glob[ctr_num]
-					poss_c = local_to_global(ini[ctr_num]+roll,player_col)
+					poss_c = self.local_to_global(ini[ctr_num]+roll,player_col)
 					if poss_c >= 52: # If I reach a home lane
 						str1 = player_col + str(ctr_num) + '_' + str(roll)
 						if execute: self.execute_move(player_id,str1)
@@ -389,7 +389,7 @@ class Board(object):
 				if c == -1: break
 				try:
 					ini_c = ini_glob[ctr_num]
-					poss_c = local_to_global(ini[ctr_num]+roll,player_col)
+					poss_c = self.local_to_global(ini[ctr_num]+roll,player_col)
 					if poss_c in self.safe_squares:
 						str1 = player_col + str(ctr_num) + '_' + str(roll)
 						if execute: self.execute_move(player_id,str1)
@@ -415,7 +415,7 @@ class Board(object):
 				if c == -1: continue
 				try:
 					ini_c = ini_glob[ctr_num]
-					poss_c = local_to_global(ini[ctr_num]+roll,player_col)	
+					poss_c = self.local_to_global(ini[ctr_num]+roll,player_col)	
 					str1 = player_col + str(ctr_num) + '_' + str(roll)
 					if execute: self.execute_move(player_id,str1)
 					return (str1,13)
@@ -441,7 +441,7 @@ class Board(object):
 				str_1 = c +'<next>' + g
 				return(str_1,min(d,h))
 			else:# f<=b and f<=d
-				move = b[:3]
+				move = a[:3]
 				str_1 = move + '6' + '<next>' + move +str(roll)
 				return(str_1,f)
 		else:#double 6
