@@ -2,6 +2,7 @@ import sys
 from Tkinter import *
 from threading import Thread
 import argparse
+import copy
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--noBoard", help="Doesn't display the GUI board", action="store_true")
@@ -197,20 +198,18 @@ class Board(object):
 	def get_best_move(self, player_id, dice):
 		''' Returns the best possible move
 		'''
-		if dice.length ==1 :
+		if dice.length == 1: # i.e. no 6
 			roll = dice[0]
 			player_col = self.colour[player_id]
 			ini = self.local_positions[player_col]#initial positions
 			ini_glob = self.global_positions[player_col]
 			opp = self.global_positions[self.opp(player_col)]# opponent position
-			poss = [x+roll for x in ini]# all possibilities
-			glob_poss = [local_to_global(x,player_col) for x in poss]#all global possibilities
 			# checking for cutting
 			for ctr_num in range(4):
 				ini_c = ini_glob[ctr_num]
+				if ini_c > 52 : continue # home lane
 				poss_c = local_to_global(ini[ctr_num]+roll,player_col)	
 				if poss_c in self.safe_squares: continue # person on safe sqaure
-				if ini_c > 52: continue # i am on home lane
 				if ini_c == 0:continue # completed
 				if ini_c ==-1 : continue # unopened
 				if poss_c in opp: 
@@ -220,9 +219,9 @@ class Board(object):
 			# if my counter is ahead within 6 distance of opposition
 			for ctr_num in range(4):
 				ini_c = ini_glob[ctr_num]
+				if ini_c > 52 : continue # home lane
 				poss_c = local_to_global(ini[ctr_num]+roll,player_col)	
 				if ini_c in self.safe_squares: continue # I am not in danger
-				if ini_c > 52: continue # i am on home lane
 				if ini_c == 0:continue # completed
 				if ini_c ==-1 : continue # unopened
 				for opp_c in opp: 
@@ -249,50 +248,99 @@ class Board(object):
 						str1 = player_col + str(ctr_num) + '_' + str(roll)
 						self.execute_move(player_id,str1)
 						return str1
-			# if my counter is ahead within 12 distance of opposition(no immediate danger but danger still)(only for local counters greater than 25
-			for ctr_num in range(4):
-				ini_c = ini_glob[ctr_num]
-				poss_c = local_to_global(ini[ctr_num]+roll,player_col)
-				if poss_c in self.safe_square: 
-				if ini_c in self.safe_squares: continue # I am not in danger
-				if ini_c > 52: continue # i am on home lane
-				if ini_c == 0:continue # completed
-				if ini_c ==-1 : continue # unopened
-				for opp_c in opp: 
-					if opp_c == -1: continue # opponent unopened
-					if opp_c >52:continue # opponent on home lane
-					if opp_c == 0: continue # opponent counter completed
-					if (ini_c - opp_c)%52 <= 6:#Scope: If multiple counters are under threat......................
-						boolean = True
-						for opp_c2 in opp:# Scope: If a counter under threat from multiple opposition counters..........
-							if opp_c2 == -1: continue # opponent unopened
-							if opp_c2 >52:continue # opponent on home lane
-							if opp_c2 == 0: continue # opponent counter completed
-							if poss_c - opp_c2 <=6: # No increase in safety even if I move
-								boolean = False
-								break
-						if boolean:
-							str1 = player_col + str(ctr_num) + '_' + str(roll)
-							self.execute_move(player_id,str1)
-							return str1
 			# if my predicted counter is behind within 6 distance of opposition
 			for ctr_num in range(4):
 				ini_c = ini_glob[ctr_num]
-				poss_c = local_to_global(ini[ctr_num]+roll,player_col)	
-				if ini_c > 52: continue # i am on home lane
+				if ini_c > 52 : continue # home lane
+				poss_c = local_to_global(ini[ctr_num]+roll,player_col)
 				if ini_c == 0:continue # completed
 				if ini_c ==-1 : continue # unopened
 				for opp_c in opp: # doesnt matter if opponent is sitting on safe square, he has to move at some point
-					# Scope: Check if this move decreases my own safety
+					# Scope: Check if this move decreases my own safety..........
 					if opp_c == -1: continue # opponent unopened
 					if opp_c >52:continue # opponent on home lane
 					if opp_c == 0: continue # opponent counter completed
-			
-			
+					if (opp_c - poss_c)%52 <= 6:
+						str1 = player_col + str(ctr_num) + '_' + str(roll)
+						self.execute_move(player_id,str1)
+						return str1
+			# homing for extra move
+			for ctr_num in range(4):
+				try: # if local_to_global gets input > 57 then exception case
+					ini_l_c = ini[ctr_num]
+					poss_c = local_to_global(ini_l_c+roll,player_col)
+					if poss_c == 0: 
+						str1 = player_col + str(ctr_num) + '_' + str(roll)
+						self.execute_move(player_id,str1)
+						return str1
+				except:
+					pass
+			# if my counter is ahead within 12 distance of opposition(no immediate danger but danger still)(only for local counters greater than 27)
+			for ctr_num in range(4):
+				if ini[ctr_num] <= 27: continue
+				ini_c = ini_glob[ctr_num]
+				if ini_c > 52 : continue # home lane
+				poss_c = local_to_global(ini[ctr_num]+roll,player_col)
+				if poss_c in self.safe_square: # If I reach a safe square
+					str1 = player_col + str(ctr_num) + '_' + str(roll)
+					self.execute_move(player_id,str1)
+					return str1
+				if ini_c == 0: continue # completed
+				if ini_c ==-1: continue # unopened
+				for opp_c in opp: 
+					if opp_c == -1: continue     # opponent unopened
+					if opp_c >  52: continue     # opponent on home lane
+					if opp_c ==  0: continue     # opponent counter completed
+					if (ini_c - opp_c)%52 <= 12: # Scope: If multiple counters are under threat......................
+						str1 = player_col + str(ctr_num) + '_' + str(roll)
+						self.execute_move(player_id,str1)
+						return str1
+			# opening with 6
+			if roll == 6:
+				for ctr_num in range(4):
+					if ini_glob[ctr_num]==-1:
+						str1 = player_col + str(ctr_num) + '_' + str(roll)
+						self.execute_move(player_id,str1)
+						return str1
+			# safing
+			for ctr_num in range(4):
+				ini_c = ini_glob[ctr_num]
+				if ini_c > 52 : continue # home lane
+				poss_c = local_to_global(ini[ctr_num]+roll,player_col)
+				if poss_c in self.safe_square: # If I reach a safe square
+					str1 = player_col + str(ctr_num) + '_' + str(roll)
+					self.execute_move(player_id,str1)
+					return str1
+			# moving inside home lane
+			for ctr_num in range(4):
+				try:
+					ini_c = ini_glob[ctr_num]
+					poss_c = local_to_global(ini[ctr_num]+roll,player_col)
+					if poss_c >= 52: # If I reach a home lane
+						str1 = player_col + str(ctr_num) + '_' + str(roll)
+						self.execute_move(player_id,str1)
+						return str1
+				except:
+					pass
+			# forwardmost without endangering that
+			def sort(l1,b):
+				return copy.copy(l1).sort(reverse=b)
+			for c in sort(ini,True):
+				ctr_num = ini.index(c)
+				try:
+					ini_c = ini_glob[ctr_num]
+					poss_c = local_to_global(ini[ctr_num]+roll,player_col)
+					if poss_c in self.safe_square: # If I reach a safe square
+						str1 = player_col + str(ctr_num) + '_' + str(roll)
+						self.execute_move(player_id,str1)
+						return str1
+				except:
+					pass
 		# order -> cutting(aggressive bot): done, defending(if any opponent near(within 6 steps)): done, 
-		# escaping(if meri aadhi badi hui goti(>24) ko bhaga saku danger ke bahar even if it is safe initially): will be case when len(dice)>1, 
-		# opening with 1:done, pursuing(agar mere aage doosre ki goti h toh follow it but not cross), 
-		# opening, safing, forwardmost (if no danger), least in danger
+		# escaping(if meri aadhi badi hui goti(>25) ko bhaga saku danger ke bahar(>6 ditance) even if it is safe initially): will be case when len(dice)>1, 
+		# opening with 1:done, pursuing (agar mere aage doosre ki goti h toh follow it but not cross)(if I reach within 6 steps) : done, 
+		# homing:done, not completely out of danger aage vaali goti ko bhagao:done, opening with 6: done, 
+		# safing:done, move inside home lane:done, forwardmost (if no danger)
 
 start_string = sys.stdin.readline().strip().split(' ')
 start_string = [int(i) for i in start_string]
