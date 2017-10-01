@@ -361,6 +361,7 @@ class Board(object):
 			# safing
 			for ctr_num in range(4):
 				ini_c = ini_glob[ctr_num]
+				if ini_c == -1: continue				
 				if ini_c > 52 : continue # home lane
 				poss_c = self.local_to_global(ini[ctr_num]+roll,player_col)
 				if poss_c in self.safe_squares: # If I reach a safe square
