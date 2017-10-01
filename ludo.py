@@ -96,7 +96,12 @@ class Board(object):
 		# 	for i in xrange(4):
 		# 		self.draw_counter(self.home_squares['R'][i], "red", i, self.canvas)
 		# 		self.draw_counter(self.home_squares['Y'][i], "yellow", i, self.canvas)
-
+	def copy_board(self):
+		c_board = Board(self.game_mode, self.player_id, False)
+		c_board.colours = self.colours
+		c_board.local_positions = self.global_positions
+		c_board.global_positions = self.global_positions
+		return c_board
 	def draw_counters(self):
 		# Redraw all counters, keep updating board_objects
 		if self.colours[0]=='B':
@@ -445,14 +450,15 @@ class Board(object):
 			a,b = self.get_best_move(player_id, [roll])
 			c,d = self.get_best_move(player_id, [6])
 			e,f = self.get_best_move(player_id, [6+roll])
+			temp = self.copy_board()
 			if b<=d and b<=f:
-				temp = copy.deepcopy(self)
+				# temp = copy.deepcopy(self)
 				temp.execute_move(player_id,a)
 				g, h = temp.get_best_move(player_id,[6])
 				str_1 = a +'<next>' +g
 				return(str_1,min(b,h))
 			elif d<=b and d<=f:
-				temp = copy.deepcopy(self)
+				# temp = copy.deepcopy(self)
 				temp.execute_move(player_id,c)
 				g, h = temp.get_best_move(player_id,[roll])
 				str_1 = c +'<next>' + g
@@ -468,20 +474,21 @@ class Board(object):
 			e,f = self.get_best_move(player_id, [6+roll])
 			g,h = self.get_best_move(player_id, [12])
 			i,j = self.get_best_move(player_id, [12+roll])
+			temp = self.copy_board()
 			if b == min([b,d,f,h,j]):
-				temp = copy.deepcopy(self)
+				# temp = copy.deepcopy(self)
 				temp.execute_move(player_id,a)
 				k, l = temp.get_best_move(player_id,[6,6])
 				str_1 = a +'<next>' +k
 				return(str_1,min(b,l))
 			elif d == min([b,d,f,h,j]):
-				temp = copy.deepcopy(self)
+				# temp = copy.deepcopy(self)
 				temp.execute_move(player_id,c)
 				k, l = temp.get_best_move(player_id,[6,roll])
 				str_1 = c +'<next>' + k
 				return(str_1,min(d,l))
 			elif f == min([b,d,f,h,j]):
-				temp = copy.deepcopy(self)
+				# temp = copy.deepcopy(self)
 				move = e[:3]
 				str_2 = move + '6' + '<next>' + move +str(roll)
 				temp.execute_move(player_id,str_2)
@@ -489,7 +496,7 @@ class Board(object):
 				str_1 = str_2 +'<next>' + k
 				return(str_1,min(f,l))
 			elif h == min([b,d,f,h,j]):
-				temp = copy.deepcopy(self)
+				# temp = copy.deepcopy(self)
 				move = g[:3]
 				str_2 = move + '6' + '<next>' + move +'6'
 				temp.execute_move(player_id,str_2)
