@@ -240,42 +240,47 @@ class Board(object):
 			opp = self.global_positions[self.opp(player_col)]# opponent position
 			# checking for cutting
 			for ctr_num in range(4):
-				ini_c = ini_glob[ctr_num]
-				if ini_c > 52 : continue # home lane
-				if ini_c == 0:continue # completed
-				if ini_c ==-1 : continue # unopened
-				poss_c = self.local_to_global(ini[ctr_num]+roll,player_col)	
-				if poss_c in self.safe_squares: continue # person on safe sqaure
-				if poss_c in opp: 
-					str1 = player_col + str(ctr_num) + '_' + str(roll) #cutting....Scope: Case-Multiple cuttings..........
-					if execute: self.execute_move(player_id,str1)#execution of cutting					
-					return (str1,1)
+				try:
+					ini_c = ini_glob[ctr_num]
+					if ini_c > 52 : continue # home lane
+					if ini_c == 0:continue # completed
+					if ini_c ==-1 : continue # unopened
+					poss_c = self.local_to_global(ini[ctr_num]+roll,player_col)	
+					if poss_c in self.safe_squares: continue # person on safe sqaure
+					if poss_c in opp: 
+						str1 = player_col + str(ctr_num) + '_' + str(roll) #cutting....Scope: Case-Multiple cuttings..........
+						if execute: self.execute_move(player_id,str1)#execution of cutting					
+						return (str1,1)
+				except: pass
 			# if my counter is ahead within 6 distance of opposition
 			for ctr_num in range(4):
 				ini_c = ini_glob[ctr_num]
 				if ini_c > 52 : continue # home lane
 				if ini_c == 0:continue # completed
 				if ini_c ==-1 : continue # unopened
-				poss_c = self.local_to_global(ini[ctr_num]+roll,player_col)	
-				if ini_c in self.safe_squares: continue # I am not in danger
-				for opp_c in opp: 
-					if opp_c == -1: continue # opponent unopened
-					if opp_c >52:continue # opponent on home lane
-					if opp_c == 0: continue # opponent counter completed
-					if (ini_c - opp_c)%52 <= 6:#Scope: If multiple counters are under threat......................
-						boolean = True
-						for opp_c2 in opp:# Scope: If a counter under threat from multiple opposition counters..........
-							if opp_c2 == -1: continue # opponent unopened
-							if opp_c2 >52:continue # opponent on home lane
-							if opp_c2 == 0: continue # opponent counter completed
-							if poss_c - opp_c2 <=6: # No increase in safety even if I move
-								boolean = False
-								break
-						if poss_c in self.safe_squares: boolean = True # If I can reach safe square then good enough
-						if boolean:
-							str1 = player_col + str(ctr_num) + '_' + str(roll)
-							if execute: self.execute_move(player_id,str1)
-							return (str1,2)
+				try:
+					poss_c = self.local_to_global(ini[ctr_num]+roll,player_col)	
+					if ini_c in self.safe_squares: continue # I am not in danger
+					for opp_c in opp: 
+					
+						if opp_c == -1: continue # opponent unopened
+						if opp_c >52:continue # opponent on home lane
+						if opp_c == 0: continue # opponent counter completed
+						if (ini_c - opp_c)%52 <= 6:#Scope: If multiple counters are under threat......................
+							boolean = True
+							for opp_c2 in opp:# Scope: If a counter under threat from multiple opposition counters..........
+								if opp_c2 == -1: continue # opponent unopened
+								if opp_c2 >52:continue # opponent on home lane
+								if opp_c2 == 0: continue # opponent counter completed
+								if poss_c - opp_c2 <=6: # No increase in safety even if I move
+									boolean = False
+									break
+							if poss_c in self.safe_squares: boolean = True # If I can reach safe square then good enough
+							if boolean:
+								str1 = player_col + str(ctr_num) + '_' + str(roll)
+								if execute: self.execute_move(player_id,str1)
+								return (str1,2)
+				except: pass
 			# escaping with large number
 			if roll>6:
 				for ctr_num in range(4):
@@ -283,20 +288,22 @@ class Board(object):
 					if ini_c > 52 : continue # home lane
 					if ini_c == 0:continue # completed
 					if ini_c ==-1 : continue # unopened
-					poss_c = self.local_to_global(ini[ctr_num]+roll,player_col)
-					if poss_c > 27:
-						boolean = True
-						for opp_c in opp: 
-							if opp_c == -1: continue # opponent unopened
-							if opp_c >52:continue # opponent on home lane
-							if opp_c == 0: continue # opponent counter completed
-							if (poss_c - opp_c)%52<=6:
-								boolean = False
-								break
-						if boolean:
-							str1 = player_col + str(ctr_num) + '_' + str(roll)
-							if execute: self.execute_move(player_id,str1)
-							return (str1,2.5)
+					try:
+						poss_c = self.local_to_global(ini[ctr_num]+roll,player_col)
+						if poss_c > 27:
+							boolean = True
+							for opp_c in opp: 
+								if opp_c == -1: continue # opponent unopened
+								if opp_c >52:continue # opponent on home lane
+								if opp_c == 0: continue # opponent counter completed
+								if (poss_c - opp_c)%52<=6:
+									boolean = False
+									break
+							if boolean:
+								str1 = player_col + str(ctr_num) + '_' + str(roll)
+								if execute: self.execute_move(player_id,str1)
+								return (str1,2.5)
+					except: pass
 			# open with 1
 			if roll == 1:
 				for ctr_num in range(4):
@@ -310,16 +317,18 @@ class Board(object):
 				if ini_c > 52 : continue # home lane
 				if ini_c == 0:continue # completed
 				if ini_c ==-1 : continue # unopened
-				poss_c = self.local_to_global(ini[ctr_num]+roll,player_col)
-				for opp_c in opp: # doesnt matter if opponent is sitting on safe square, he has to move at some point
-					# Scope: Check if this move decreases my own safety..........
-					if opp_c == -1: continue # opponent unopened
-					if opp_c >52:continue # opponent on home lane
-					if opp_c == 0: continue # opponent counter completed
-					if (opp_c - poss_c)%52 <= 6:
-						str1 = player_col + str(ctr_num) + '_' + str(roll)
-						if execute: self.execute_move(player_id,str1)
-						return (str1,4)
+				try:
+					poss_c = self.local_to_global(ini[ctr_num]+roll,player_col)
+					for opp_c in opp: # doesnt matter if opponent is sitting on safe square, he has to move at some point
+						# Scope: Check if this move decreases my own safety..........
+						if opp_c == -1: continue # opponent unopened
+						if opp_c >52:continue # opponent on home lane
+						if opp_c == 0: continue # opponent counter completed
+						if (opp_c - poss_c)%52 <= 6:
+							str1 = player_col + str(ctr_num) + '_' + str(roll)
+							if execute: self.execute_move(player_id,str1)
+							return (str1,4)
+				except: pass
 			# homing for extra move
 			for ctr_num in range(4):
 				try: # if local_to_global gets input > 57 then exception case
@@ -338,19 +347,21 @@ class Board(object):
 				if ini_c > 52 : continue # home lane
 				if ini_c == 0: continue # completed
 				if ini_c ==-1: continue # unopened
-				poss_c = self.local_to_global(ini[ctr_num]+roll,player_col)
-				if poss_c in self.safe_squares: # If I reach a safe square
-					str1 = player_col + str(ctr_num) + '_' + str(roll)
-					if execute: self.execute_move(player_id,str1)
-					return (str1,6)
-				for opp_c in opp: 
-					if opp_c == -1: continue     # opponent unopened
-					if opp_c >  52: continue     # opponent on home lane
-					if opp_c ==  0: continue     # opponent counter completed
-					if (ini_c - opp_c)%52 <= 12: # Scope: If multiple counters are under threat......................
+				try: 
+					poss_c = self.local_to_global(ini[ctr_num]+roll,player_col)
+					if poss_c in self.safe_squares: # If I reach a safe square
 						str1 = player_col + str(ctr_num) + '_' + str(roll)
 						if execute: self.execute_move(player_id,str1)
-						return (str1,7)
+						return (str1,6)
+					for opp_c in opp: 
+						if opp_c == -1: continue     # opponent unopened
+						if opp_c >  52: continue     # opponent on home lane
+						if opp_c ==  0: continue     # opponent counter completed
+						if (ini_c - opp_c)%52 <= 12: # Scope: If multiple counters are under threat......................
+							str1 = player_col + str(ctr_num) + '_' + str(roll)
+							if execute: self.execute_move(player_id,str1)
+							return (str1,7)
+				except:pass
 			# opening with 6
 			if roll == 6:
 				for ctr_num in range(4):
@@ -361,17 +372,22 @@ class Board(object):
 			# safing
 			for ctr_num in range(4):
 				ini_c = ini_glob[ctr_num]
-				if ini_c == -1: continue				
+				if ini_c == -1: continue
+				if ini_c == 0: continue				
 				if ini_c > 52 : continue # home lane
-				poss_c = self.local_to_global(ini[ctr_num]+roll,player_col)
-				if poss_c in self.safe_squares: # If I reach a safe square
-					str1 = player_col + str(ctr_num) + '_' + str(roll)
-					if execute: self.execute_move(player_id,str1)
-					return (str1,9)
+				try:
+					poss_c = self.local_to_global(ini[ctr_num]+roll,player_col)
+					if poss_c in self.safe_squares: # If I reach a safe square
+						str1 = player_col + str(ctr_num) + '_' + str(roll)
+						if execute: self.execute_move(player_id,str1)
+						return (str1,9)
+				except:
+					pass
 			# moving inside home lane
 			for ctr_num in range(4):
 				try:
 					ini_c = ini_glob[ctr_num]
+					if ini_c == 0: continue
 					poss_c = self.local_to_global(ini[ctr_num]+roll,player_col)
 					if poss_c >= 52: # If I reach a home lane
 						str1 = player_col + str(ctr_num) + '_' + str(roll)
@@ -442,7 +458,7 @@ class Board(object):
 				str_1 = c +'<next>' + g
 				return(str_1,min(d,h))
 			else:# f<=b and f<=d
-				move = a[:3]
+				move = e[:3]
 				str_1 = move + '6' + '<next>' + move +str(roll)
 				return(str_1,f)
 		else:#double 6
@@ -481,7 +497,7 @@ class Board(object):
 				str_1 = str_2 +'<next>' + k
 				return(str_1,min(h,l))
 			else:# f>=b and f>=d
-				move = b[:3]
+				move = i[:3]
 				str_1 = move + '6' + '<next>' + move + '6' + '<next>' + move +str(roll)
 				return(str_1,j)
 
