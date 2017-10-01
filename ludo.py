@@ -8,7 +8,7 @@ class Board(object):
 	def __init__(self, game_mode, player_id, gui_enable):
 		self.gui_enable = gui_enable
 		self.game_mode = game_mode
-		self.player_id - player_id
+		self.player_id = player_id
 		self.start_squares = {'G':1, 'Y':14, 'B':27, 'R':40}
 		self.walk_start_squares = {'G':53, 'Y':58, 'B':63, 'R':68}
 		self.safe_squares = [1,9,14,22,27,35,40,48]
@@ -99,7 +99,6 @@ class Board(object):
 		# 		self.draw_counter(self.home_squares['R'][i], "red", i, self.canvas)
 		# 		self.draw_counter(self.home_squares['Y'][i], "yellow", i, self.canvas)
 	def copy_board(self):
-		def copy_board(self):
 		c_board = Board(self.game_mode, self.player_id, False)
 		c_board.colours = copy.deepcopy(self.colours)
 		c_board.local_positions = copy.deepcopy(self.local_positions)
@@ -191,16 +190,20 @@ class Board(object):
 
 	# TODO: Complete this method		I think this should handle execution except for case where multiple dices are thrown example (6,3)
 	# In that case what will be the input like? one at a time followed by <\n> should handled
-	def execute_move(self, player_id, move_str):
+	def execute_move(self, player_id, move_str1):
 		''' Executes a move on the board
 		'''
 		# move will be of form R1_5-> ['R','1','_','5']
 		sys.stderr.write("execute_move\n")
-		if (move_str=='NA'):
+		sys.stderr.write("initial config: "+ str(self.global_positions) +"\n")
+		sys.stderr.write("move: "+ move_str1+"\n")
+		if (move_str1=='NA'):
 			return
-		moves = move_str.split('<next>')
-		for move in moves:
-			if move=='REPEAT':
+		moves = move_str1.split('<next>')
+		for move_str in moves:
+			sys.stderr.write("initial config: "+ move_str +"\n")
+			if move_str=='REPEAT':
+				sys.stderr.write("execute_move_repeat\n")				
 				continue
 			move = list(move_str)
 			colour = move[0]
@@ -209,10 +212,12 @@ class Board(object):
 			if self.local_positions[colour][counter_no] == -1: 
 				if (movement == 1 or movement == 6):# Goti khul gayi varna kuch nhi chal skta/invalid move
 					self.local_positions[colour][counter_no] = 1
+					sys.stderr.write("execute_move : opened " +str(counter_no)+"\n")
 					self.global_positions[colour][counter_no] = self.start_squares[colour]
 			else:# Goti pehle se khuli thee
 				self.local_positions[colour][counter_no] += movement
 				current_local = self.local_positions[colour][counter_no]
+				sys.stderr.write("execute_move" + str(counter_no)+"\n")
 				self.global_positions[colour][counter_no] = self.local_to_global(current_local, colour)
 				current_global = self.global_positions[colour][counter_no]
 				if current_global not in self.safe_squares: 
@@ -221,6 +226,8 @@ class Board(object):
 							i = self.global_positions[opp_colour].index(current_global)
 							self.global_positions[opp_colour][i] = -1
 							self.local_positions[opp_colour][i] = -1
+		
+		sys.stderr.write("final config: "+ str(self.global_positions) +"\n")
 		if (self.gui_enable):
 			sys.stderr.write("Rendering the board again\n")
 			self.refresh_counters()
@@ -240,7 +247,6 @@ class Board(object):
 		# Pick a counter and try to advance it as much, if possible
 
 	def get_best_move(self, player_id, dice,execute = False):
-		sys.stderr.write("Initial config: "+ str(self.global_positions)+"\n")
 		''' Returns the best possible move
 		'''
 		if dice == [0]: 
