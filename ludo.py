@@ -584,13 +584,12 @@ def play_game(board):
 			continue
 		move = sys.stdin.readline().strip()
 		temp_move = move.split('<next>')
-		if temp_move[-1]=='REPEAT':
+		while(temp_move[-1]=='REPEAT'):
 			board.execute_move(1-player_id, move)
 			dice = sys.stdin.readline().strip()
 			move = sys.stdin.readline().strip()
-			board.execute_move(1-player_id, move)
-		else:
-			board.execute_move(1-player_id, move)			
+			temp_move = move.split('<next>')
+		board.execute_move(1-player_id, move)
 
 if (draw_board==1):
 	Th = Thread(target = lambda : play_game(board))
