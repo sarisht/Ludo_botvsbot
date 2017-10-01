@@ -310,7 +310,7 @@ class Board(object):
 				if ini_c > 52 : continue # home lane
 				if ini_c == 0:continue # completed
 				if ini_c ==-1 : continue # unopened
-				poss_c = local_to_global(ini[ctr_num]+roll,player_col)
+				poss_c = self.local_to_global(ini[ctr_num]+roll,player_col)
 				for opp_c in opp: # doesnt matter if opponent is sitting on safe square, he has to move at some point
 					# Scope: Check if this move decreases my own safety..........
 					if opp_c == -1: continue # opponent unopened
