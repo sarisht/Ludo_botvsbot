@@ -221,7 +221,7 @@ class Board(object):
 				self.global_positions[colour][counter_no] = self.local_to_global(current_local, colour)
 				current_global = self.global_positions[colour][counter_no]
 				if current_global not in self.safe_squares: 
-					if current_global in self.global_positions[self.opp(colour)]:# Goti kat gayi
+					if current_global in self.global_positions[self.opp(colour)] and current_global !=0:# Goti kat gayi
 							opp_colour = self.opp(colour)
 							i = self.global_positions[opp_colour].index(current_global)
 							self.global_positions[opp_colour][i] = -1
@@ -569,9 +569,8 @@ def play_game(board):
 		if (dice == 'YOU ROLLED 3 SIXES, AND THUS A DUCK'):
 			dice = [0]
 		else:
-			dice = dice[11:]
 			dice = dice.split(' ')
-			dice = [int(i) for i in dice]
+			dice = [int(i) for i in dice[2:]]
 		best_move = board.get_best_move(player_id, dice)
 		# TODO: Find the best move for player_id, dice
 		# and update this move on the board (Add the get_best_move method)
