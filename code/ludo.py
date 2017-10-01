@@ -386,7 +386,7 @@ class Board(object):
  			for c in sort(ini,True):
 				ctr_num = ini.index(c)
 				if c == 0: break
-				if C == -1: break
+				if c == -1: break
 				try:
 					ini_c = ini_glob[ctr_num]
 					poss_c = local_to_global(ini[ctr_num]+roll,player_col)
@@ -412,7 +412,7 @@ class Board(object):
 			for c in sort(ini, False):
 				ctr_num = ini.index(c)
 				if c == 0: continue
-				if C == -1: continue
+				if c == -1: continue
 				try:
 					ini_c = ini_glob[ctr_num]
 					poss_c = local_to_global(ini[ctr_num]+roll,player_col)	
