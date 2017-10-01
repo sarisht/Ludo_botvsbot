@@ -428,19 +428,19 @@ class Board(object):
 			a,b = self.get_best_move(player_id, [roll])
 			c,d = self.get_best_move(player_id, [6])
 			e,f = self.get_best_move(player_id, [6+roll])
-			if b>=d and b>=f:
+			if b<=d and b<=f:
 				temp = copy.deepcopy(self)
 				temp.execute_move(player_id,a)
 				g, h = temp.get_best_move(player_id,[6])
 				str_1 = a +'<next>' +g
 				return(str_1,min(b,h))
-			elif d>=b and d>=f:
+			elif d<=b and d<=f:
 				temp = copy.deepcopy(self)
 				temp.execute_move(player_id,c)
 				g, h = temp.get_best_move(player_id,[roll])
 				str_1 = c +'<next>' + g
 				return(str_1,min(d,h))
-			else:# f>=b and f>=d
+			else:# f<=b and f<=d
 				move = b[:3]
 				str_1 = move + '6' + '<next>' + move +str(roll)
 				return(str_1,f)
@@ -451,25 +451,25 @@ class Board(object):
 			e,f = self.get_best_move(player_id, [6+roll])
 			g,h = self.get_best_move(player_id, [12])
 			i,j = self.get_best_move(player_id, [12+roll])
-			if b == max([b,d,f,h,j]):
+			if b == min([b,d,f,h,j]):
 				temp = copy.deepcopy(self)
 				temp.execute_move(player_id,a)
 				k, l = temp.get_best_move(player_id,[6,6])
 				str_1 = a +'<next>' +k
 				return(str_1,min(b,l))
-			elif d == max([b,d,f,h,j]):
+			elif d == min([b,d,f,h,j]):
 				temp = copy.deepcopy(self)
 				temp.execute_move(player_id,c)
 				k, l = temp.get_best_move(player_id,[6,roll])
 				str_1 = c +'<next>' + k
 				return(str_1,min(d,l))
-			elif f == max([b,d,f,h,j]):
+			elif f == min([b,d,f,h,j]):
 				temp = copy.deepcopy(self)
 				temp.execute_move(player_id,e)
 				k, l = temp.get_best_move(player_id,[6])
 				str_1 = e +'<next>' + k
 				return(str_1,min(f,l))
-			elif h == max([b,d,f,h,j]):
+			elif h == min([b,d,f,h,j]):
 				temp = copy.deepcopy(self)
 				temp.execute_move(player_id,g)
 				k, l = temp.get_best_move(player_id,[roll])
