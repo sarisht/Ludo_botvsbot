@@ -380,7 +380,9 @@ class Board(object):
 					pass
 			# forwardmost without endangering that
 			def sort(l1,b):
-				return copy.copy(l1).sort(reverse=b) # copy.copy used as I dont want l1 to get changed, b is for descending
+				k = copy.copy(l1)
+				k.sort(reverse=b)
+				return k # copy.copy used as I dont want l1 to get changed, b is for descending
  			for c in sort(ini,True):
 				ctr_num = ini.index(c)
 				if c == 0: break
@@ -519,7 +521,7 @@ def play_game(board):
 		best_move = board.get_best_move(player_id, dice)
 		# TODO: Find the best move for player_id, dice
 		# and update this move on the board (Add the get_best_move method)
-		sys.stdout.write(best_move[0])
+		sys.stdout.write(best_move[0]+'\n')
 		sys.stdout.flush()
 		board.execute_move(player_id, best_move[0])
 		# TODO: Check winning condition
