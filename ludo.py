@@ -482,12 +482,14 @@ class Board(object):
 				temp.execute_move(player_id,a)
 				g, h = temp.get_best_move(player_id,[6])
 				str_1 = a +'<next>' +g
+				if g == 'NA': str_1 = a
 				return(str_1,min(b,h))
 			elif d<=b and d<=f:
 				# temp = copy.deepcopy(self)
 				temp.execute_move(player_id,c)
 				g, h = temp.get_best_move(player_id,[roll])
 				str_1 = c +'<next>' + g
+				if g == 'NA': str_1 = c
 				return(str_1,min(d,h))
 			else:# f<=b and f<=d
 				move = e[:3]
@@ -506,12 +508,14 @@ class Board(object):
 				temp.execute_move(player_id,a)
 				k, l = temp.get_best_move(player_id,[6,6])
 				str_1 = a +'<next>' +k
+				if k == 'NA' : str_1 = a
 				return(str_1,min(b,l))
 			elif d == min([b,d,f,h,j]):
 				# temp = copy.deepcopy(self)
 				temp.execute_move(player_id,c)
 				k, l = temp.get_best_move(player_id,[6,roll])
 				str_1 = c +'<next>' + k
+				if k == 'NA' : str_1 = c
 				return(str_1,min(d,l))
 			elif f == min([b,d,f,h,j]):
 				# temp = copy.deepcopy(self)
@@ -520,6 +524,7 @@ class Board(object):
 				temp.execute_move(player_id,str_2)
 				k, l = temp.get_best_move(player_id,[6])
 				str_1 = str_2 +'<next>' + k
+				if k == 'NA' : str_1 = str_2
 				return(str_1,min(f,l))
 			elif h == min([b,d,f,h,j]):
 				# temp = copy.deepcopy(self)
@@ -528,6 +533,7 @@ class Board(object):
 				temp.execute_move(player_id,str_2)
 				k, l = temp.get_best_move(player_id,[roll])
 				str_1 = str_2 +'<next>' + k
+				if k == 'NA' : str_1 = str_2
 				return(str_1,min(h,l))
 			else:# f>=b and f>=d
 				move = i[:3]
