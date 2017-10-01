@@ -441,7 +441,7 @@ class Board(object):
 				str_1 = c +'<next>' + g
 				return(str_1,min(d,h))
 			else:# f<=b and f<=d
-				move = b[:3]
+				move = a[:3]
 				str_1 = move + '6' + '<next>' + move +str(roll)
 				return(str_1,f)
 		else:#double 6
