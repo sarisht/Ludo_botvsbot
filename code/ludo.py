@@ -271,7 +271,7 @@ class Board(object):
 							if poss_c - opp_c2 <=6: # No increase in safety even if I move
 								boolean = False
 								break
-						if poss_c in safe_squares: boolean = True # If I can reach safe square then good enough
+						if poss_c in self.safe_squares: boolean = True # If I can reach safe square then good enough
 						if boolean:
 							str1 = player_col + str(ctr_num) + '_' + str(roll)
 							if execute: self.execute_move(player_id,str1)
@@ -361,6 +361,7 @@ class Board(object):
 			# safing
 			for ctr_num in range(4):
 				ini_c = ini_glob[ctr_num]
+				if ini_c == -1: continue				
 				if ini_c > 52 : continue # home lane
 				poss_c = self.local_to_global(ini[ctr_num]+roll,player_col)
 				if poss_c in self.safe_squares: # If I reach a safe square
@@ -465,15 +466,19 @@ class Board(object):
 				return(str_1,min(d,l))
 			elif f == min([b,d,f,h,j]):
 				temp = copy.deepcopy(self)
-				temp.execute_move(player_id,e)
+				move = e[:3]
+				str_2 = move + '6' + '<next>' + move +str(roll)
+				temp.execute_move(player_id,str_2)
 				k, l = temp.get_best_move(player_id,[6])
-				str_1 = e +'<next>' + k
+				str_1 = str_2 +'<next>' + k
 				return(str_1,min(f,l))
 			elif h == min([b,d,f,h,j]):
 				temp = copy.deepcopy(self)
-				temp.execute_move(player_id,g)
+				move = g[:3]
+				str_2 = move + '6' + '<next>' + move +'6'
+				temp.execute_move(player_id,str_2)
 				k, l = temp.get_best_move(player_id,[roll])
-				str_1 = g +'<next>' + k
+				str_1 = str_2 +'<next>' + k
 				return(str_1,min(h,l))
 			else:# f>=b and f>=d
 				move = b[:3]
