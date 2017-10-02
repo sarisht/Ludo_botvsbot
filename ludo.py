@@ -441,10 +441,13 @@ class Board(object):
  			for c in sort(ini,True):
 				sys.stderr.write("Local State: "+str(ini)+"\n")
 				ctr_num = ini.index(c)
+				sys.stderr.write(str(ctr_num)+"\n")
 				if c == 0: break
 				if c == -1: break
 				try:
+					sys.stderr.write(str(c)+"\n")
 					ini_c = ini_glob[ctr_num]
+					sys.stderr.write(str(ini_c)+"\n")
 					poss_c = self.local_to_global(ini[ctr_num]+roll,player_col)
 					if poss_c in self.safe_squares:
 						str1 = player_col + str(ctr_num) + '_' + str(roll)
@@ -455,13 +458,13 @@ class Board(object):
 						if opp_c2 == -1: continue # opponent unopened
 						if opp_c2 >52:continue # opponent on home lane
 						if opp_c2 == 0: continue # opponent counter completed
-						if poss_c - opp_c2 <=6: # No increase in safety even if I move
+						if (poss_c - opp_c2)%52 <=6: # No increase in safety even if I move
 							boolean = False
 							break
 					if boolean:
-							str1 = player_col + str(ctr_num) + '_' + str(roll)
-							if execute: self.execute_move(player_id,str1)
-							if poss_c not in ini_glob or poss_c in self.safe_squares or poss_c ==0  or poss_c>52: return (str1,12)
+						str1 = player_col + str(ctr_num) + '_' + str(roll)
+						if execute: self.execute_move(player_id,str1)
+						if poss_c not in ini_glob or poss_c in self.safe_squares or poss_c ==0  or poss_c>52: return (str1,12)
 				except:
 					continue
 			# if all go in danger
