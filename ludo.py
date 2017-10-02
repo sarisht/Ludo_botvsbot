@@ -580,7 +580,6 @@ def play_game(board):
 		board.execute_move(0, move)
 
 	while(True):
-		time.sleep(1)
 		sys.stdout.write('<THROW>\n')
 		sys.stdout.flush()
 		dice = sys.stdin.readline().strip()
