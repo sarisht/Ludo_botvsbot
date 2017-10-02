@@ -2,6 +2,7 @@ import sys
 from Tkinter import *
 from threading import Thread
 import copy
+import time
 
 class Board(object):
 	"""Class for storing the current state of the game and moves"""
@@ -205,10 +206,10 @@ class Board(object):
 			if move_str=='REPEAT':
 				sys.stderr.write("execute_move_repeat\n")				
 				continue
-			move = list(move_str)
+			move = move_str
 			colour = move[0]
 			counter_no = int(move[1])
-			movement = int(move[3])
+			movement = int(move[3:])
 			if self.local_positions[colour][counter_no] == -1: 
 				if (movement == 1 or movement == 6):# Goti khul gayi varna kuch nhi chal skta/invalid move
 					self.local_positions[colour][counter_no] = 1
@@ -355,9 +356,18 @@ class Board(object):
 						if opp_c >52:continue # opponent on home lane
 						if opp_c == 0: continue # opponent counter completed
 						if (opp_c - poss_c)%52 <= 6:
-							str1 = player_col + str(ctr_num) + '_' + str(roll)
-							if execute: self.execute_move(player_id,str1)
-							if poss_c not in ini_glob or poss_c in self.safe_squares or poss_c ==0 : return (str1,4)
+							boolean = True
+							for opp_c2 in opp:# Scope: If a counter under threat from multiple opposition counters..........
+								if opp_c2 == -1: continue # opponent unopened
+								if opp_c2 >52:continue # opponent on home lane
+								if opp_c2 == 0: continue # opponent counter completed
+								if poss_c - opp_c2 <=6: # No increase in safety even if I move
+									boolean = False
+									break
+							if boolean:
+								str1 = player_col + str(ctr_num) + '_' + str(roll)
+								if execute: self.execute_move(player_id,str1)
+								if poss_c not in ini_glob or poss_c in self.safe_squares or poss_c ==0 : return (str1,4)
 				except: continue
 			# homing for extra move
 			sys.stderr.write("Trying to get into final state"+"\n")
@@ -380,18 +390,27 @@ class Board(object):
 				if ini_c ==-1: continue # unopened
 				try: 
 					poss_c = self.local_to_global(ini[ctr_num]+roll,player_col)
-					if poss_c in self.safe_squares: # If I reach a safe square
-						str1 = player_col + str(ctr_num) + '_' + str(roll)
-						if execute: self.execute_move(player_id,str1)
-						if poss_c not in ini_glob or poss_c in self.safe_squares or poss_c ==0 : return (str1,6)
-					for opp_c in opp: 
+					for opp_c in opp:
 						if opp_c == -1: continue     # opponent unopened
 						if opp_c >  52: continue     # opponent on home lane
 						if opp_c ==  0: continue     # opponent counter completed
-						if (ini_c - opp_c)%52 <= 12: # Scope: If multiple counters are under threat......................
-							str1 = player_col + str(ctr_num) + '_' + str(roll)
-							if execute: self.execute_move(player_id,str1)
-							if poss_c not in ini_glob or poss_c in self.safe_squares or poss_c ==0 : return (str1,7)
+						if (ini_c - opp_c)%52 <= 12: # Scope: If multiple counters are under threat.....................	
+							if poss_c in self.safe_squares: # If I reach a safe square
+								str1 = player_col + str(ctr_num) + '_' + str(roll)
+								if execute: self.execute_move(player_id,str1)
+								if poss_c not in ini_glob or poss_c in self.safe_squares or poss_c ==0 : return (str1,6)
+							boolean = True
+							for opp_c2 in opp:# Scope: If a counter under threat from multiple opposition counters..........
+								if opp_c2 == -1: continue # opponent unopened
+								if opp_c2 >52:continue # opponent on home lane
+								if opp_c2 == 0: continue # opponent counter completed
+								if poss_c - opp_c2 <=6: # No increase in safety even if I move
+									boolean = False
+									break
+							if boolean:
+								str1 = player_col + str(ctr_num) + '_' + str(roll)
+								if execute: self.execute_move(player_id,str1)
+								if poss_c not in ini_glob or poss_c in self.safe_squares or poss_c ==0 : return (str1,7)
 				except:continue
 			# opening with 6
 			if roll == 6:
@@ -420,6 +439,7 @@ class Board(object):
 				k.sort(reverse=b)
 				return k # copy.copy used as I dont want l1 to get changed, b is for descending
  			for c in sort(ini,True):
+				sys.stderr.write("Local State: "+str(ini)+"\n")
 				ctr_num = ini.index(c)
 				if c == 0: break
 				if c == -1: break
@@ -481,7 +501,7 @@ class Board(object):
 				return(str_1,min(d,h))
 			else:# f<=b and f<=d
 				move = e[:3]
-				str_1 = move + '6' + '<next>' + move +str(roll)
+				str_1 = move + str(6 + roll)
 				return(str_1,f)
 		else:#double 6
 			roll = dice[2]
@@ -508,7 +528,7 @@ class Board(object):
 			elif f == min([b,d,f,h,j]):
 				# temp = copy.deepcopy(self)
 				move = e[:3]
-				str_2 = move + '6' + '<next>' + move +str(roll)
+				str_2 = move + str(6+roll)
 				temp.execute_move(player_id,str_2)
 				k, l = temp.get_best_move(player_id,[6])
 				str_1 = str_2 +'<next>' + k
@@ -517,7 +537,7 @@ class Board(object):
 			elif h == min([b,d,f,h,j]):
 				# temp = copy.deepcopy(self)
 				move = g[:3]
-				str_2 = move + '6' + '<next>' + move +'6'
+				str_2 = move + '12'
 				temp.execute_move(player_id,str_2)
 				k, l = temp.get_best_move(player_id,[roll])
 				str_1 = str_2 +'<next>' + k
@@ -525,7 +545,7 @@ class Board(object):
 				return(str_1,min(h,l))
 			else:# f>=b and f>=d
 				move = i[:3]
-				str_1 = move + '6' + '<next>' + move + '6' + '<next>' + move +str(roll)
+				str_1 = move + str(12+roll)
 				return(str_1,j)
 
 		# order -> cutting(aggressive bot): done, defending(if any opponent near(within 6 steps)): done, 
@@ -557,6 +577,7 @@ def play_game(board):
 		board.execute_move(0, move)
 
 	while(True):
+		time.sleep(1)
 		sys.stdout.write('<THROW>\n')
 		sys.stdout.flush()
 		dice = sys.stdin.readline().strip()
@@ -569,6 +590,7 @@ def play_game(board):
 		# TODO: Find the best move for player_id, dice
 		# and update this move on the board (Add the get_best_move method)
 		sys.stdout.write(best_move[0]+'\n')
+		sys.stderr.write("move_rank: "+str(best_move[1])+"\n")
 		sys.stdout.flush()
 		board.execute_move(player_id, best_move[0])
 		# TODO: Check winning condition
