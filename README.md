@@ -1,5 +1,5 @@
 # Shakuni
-A ludo playing bot, written in Python. Uses heuristics based search (expecti-minimax with single ply) and TD Learning (added to branch rishab) for weight learning.
+A ludo playing bot, written in Python. Uses heuristics based search (expecti-minimax with probabilistic 2 ply) and TD Learning (added to branch rishab) for weight learning.
 
 # State Space
 The state of the game is maintained by two dictionaries, with key being the colour, and value being the array storing the positions for each of the pieces.  Two positions are maintained: Local (how many squares away from the starting square) and Global (square number on the board, as defined in Board.xlsx). 
